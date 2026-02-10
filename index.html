@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FOR MY LOVE</title>
+<style>
+  :root { --pink: #ef9abc; --soft-pink: #ffb3d1; --dark: #050002; --gold: #ffd700; }
+  
+  *, body, html, button, .gift-box, .h-heart, a { 
+    cursor: none !important; 
+  }
+
+  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--dark); font-family: 'Georgia', serif; }
+  
+  #cursor-heart {
+    position: fixed; width: 22px; height: 22px; background: white;
+    pointer-events: none; z-index: 9999; transform: translate(-50%, -50%);
+    clip-path: path('M10,3.25C10,3.25,9.5,0,5,0C2,0,0,2.5,0,5C0,10,10,15,10,15C10,15,20,10,20,5C20,2.5,18,0,15,0C10.5,0,10,3.25,10,3.25Z');
+    box-shadow: 0 0 15px white;
+  }
+
+  .back-btn { 
+    position: absolute; top: 20px; left: 20px; color: white; 
+    border: 1px solid var(--pink); padding: 5px 15px; 
+    z-index: 1000; display: none; background: rgba(255, 26, 117, 0.2);
+    font-size: 14px; letter-spacing: 2px;
+  }
+
+  #restart-inf {
+    position: absolute; bottom: 30px; right: 30px; color: white;
+    border: 1px solid white; padding: 5px 15px; display: none;
+    background: transparent; font-size: 12px; z-index: 100;
+  }
+  
+  .screen { position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 5; }
+  .active { display: flex; }
+
+  #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+  .floating-text {
+    position: absolute; color: var(--soft-pink); font-size: 17px; 
+    opacity: 0.5; white-space: nowrap; pointer-events: none; z-index: 2;
+    animation: drift linear infinite; font-style: italic; letter-spacing: 1px;
+    font-family: 'Times New Roman', serif;
+  }
+
+  @keyframes drift {
+    from { transform: translateY(0px) translateX(0px); }
+    to { transform: translateY(-110vh) translateX(30px); }
+  }
+
+  .begin-btn { margin-top: 30px; padding: 15px 40px; border: 2px solid var(--pink); color: var(--pink); background: transparent; font-size: 18px; letter-spacing: 3px; transition: 0.3s; z-index: 10; }
+  .begin-btn:hover { background: var(--pink); color: white; box-shadow: 0 0 20px var(--pink); }
+
+  .instruction { color: white; margin-bottom: 50px; letter-spacing: 4px; font-size: 16px; text-transform: uppercase; text-shadow: 0 0 10px var(--pink); }
+  .gift-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; }
+  
+  .gift-box { 
+    width: 140px; height: 140px; background: rgba(255, 26, 117, 0.2); 
+    border: 2px solid var(--pink); position: relative; 
+    transition: all 0.4s; box-shadow: 0 0 15px rgba(255, 26, 117, 0.1);
+    display: flex; align-items: center; justify-content: center; font-size: 40px;
+  }
+  .gift-box.opened { border-color: var(--soft-pink); background: rgba(255, 179, 209, 0.1); opacity: 0.6; }
+  .gift-box:hover:not(.opened) { transform: scale(1.1); background: rgba(255, 26, 117, 0.6); box-shadow: 0 0 30px var(--pink); }
+
+  #final-surprise-btn {
+    display: none; margin-top: 30px; padding: 20px 50px; background: var(--gold);
+    color: black; font-weight: bold; border: none;
+    letter-spacing: 3px; font-size: 20px; border-radius: 50px;
+    box-shadow: 0 0 30px var(--gold); animation: pulse-gold 1.5s infinite;
+  }
+
+  @keyframes pulse-gold { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+  /* Box 1 Photo Styling */
+  .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 80%; }
+  .photo-grid img { 
+    width: 250px; height: 250px; object-fit: cover; 
+    border: 4px solid white; transition: 0.5s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  }
+  .photo-grid img:hover { 
+    transform: scale(1.05) rotate(2deg);
+    border-color: var(--pink);
+    box-shadow: 0 0 25px var(--pink), 0 0 50px rgba(255, 26, 117, 0.5);
+  }
+
+  .msg-content { color: var(--soft-pink); text-align: center; max-width: 80%; line-height: 2; font-size: 24px; min-height: 100px; }
+
+  #infinite-reveal-msg {
+    position: absolute; bottom: 100px; color: var(--soft-pink); 
+    font-size: 32px; font-family: 'Brush Script MT', cursive, serif;
+    opacity: 0; transition: opacity 3s ease-in-out;
+    text-shadow: 0 0 15px var(--pink); text-align: center; width: 100%;
+  }
+
+  .heart-garden { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; max-width: 800px; }
+  .hover-heart-wrapper { position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; }
+  .h-heart { font-size: 50px; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 0 5px var(--pink)); }
+  .h-msg { 
+    position: absolute; width: 150px; background: white; color: var(--pink); 
+    padding: 10px; border-radius: 10px; font-size: 14px; font-weight: bold;
+    bottom: 110%; left: 50%; transform: translateX(-50%) scale(0);
+    transition: 0.3s; pointer-events: none; text-align: center; 
+    box-shadow: 0 5px 15px rgba(255, 26, 117, 0.4);
+  }
+  .h-heart:hover { transform: scale(1.4) rotate(15deg); filter: drop-shadow(0 0 20px white); }
+  .h-heart:hover + .h-msg { transform: translateX(-50%) scale(1); }
+
+</style>
+</head>
+<body>
+
+<div id="cursor-heart"></div>
+<canvas id="bg-canvas"></canvas>
+<div id="floating-messages-container"></div>
+<div class="back-btn" onclick="showScreen('hub-screen')">BACK 🔙</div>
+
+<div id="welcome-screen" class="screen active">
+  <h1 style="color: var(--pink); letter-spacing: 8px; text-transform: uppercase;">💗FOR MY LOVE💗</h1>
+  <button class="begin-btn" onclick="showScreen('hub-screen')">LET'S BEGIN </button>
+</div>
+
+<div id="hub-screen" class="screen">
+  <div id="hub-content">
+    <div class="instruction">Open one by one...✨</div>
+    <div class="gift-container">
+      <div class="gift-box" id="box1" onclick="openBox('box1', 'gift-photo')">🎁</div>
+      <div class="gift-box" id="box2" onclick="openBox('box2', 'gift-infinity')">🎁</div>
+      <div class="gift-box" id="box3" onclick="openBox('box3', 'gift-msg')">🎁</div>
+      <div class="gift-box" id="box4" onclick="openBox('box4', 'gift-secret')">🎁</div>
+    </div>
+  </div>
+  <button id="final-surprise-btn" onclick="showFinalNote()">NEXT</button>
+</div>
+
+<div id="gift-photo" class="screen">
+  <div class="photo-grid">
+    <img src="IMG_3834.jpg" alt="1">
+    <img src="d8ad185f-ec23-4982-b312-d2c63d1af3e9.JPG" alt="2">
+    <img src="/Users/tanishab/Downloads/d8ad185f-ec23-4982-b312-d2c63d1af3e9.JPG" alt="3">
+    <img src="https://via.placeholder.com/300/ff1a75/ffffff?text=Photo+4" alt="4">
+  </div>
+  <p style="color: var(--soft-pink); margin-top: 30px; letter-spacing: 2px; font-size: 22px;">Every version of you is my favorite. ❤️😻</p>
+</div>
+
+<div id="gift-infinity" class="screen">
+    <div id="inf-message" style="position: absolute; top: 80px; color: #ffb3d1; letter-spacing: 4px; text-align: center; width: 100%; pointer-events: none; text-transform: uppercase;">Search in the darkness how much I love you 🕯️</div>
+    <canvas id="infCanvas"></canvas>
+    <div id="infinite-reveal-msg">My love for you is infinite</div>
+    <button id="restart-inf" onclick="startInfinityGame()">Again</button>
+</div>
+
+<div id="gift-msg" class="screen">
+  <div class="msg-content" id="typewriter-text"></div>
+</div>
+
+<div id="gift-secret" class="screen">
+  <h2 style="color: var(--pink); letter-spacing: 4px; margin-bottom: 40px; text-transform: uppercase;">Hover over my hearts 💐</h2>
+  <div class="heart-garden">
+    <div class="hover-heart-wrapper"><div class="h-heart">💖</div><div class="h-msg">You're my best friend 👯‍♀️</div></div>
+    <div class="hover-heart-wrapper"><div class="h-heart">💓</div><div class="h-msg">I love your smile 😊</div></div>
+    <div class="hover-heart-wrapper"><div class="h-heart">💘</div><div class="h-msg">You're my soulmate 👩‍❤️‍👨</div></div>
+    <div class="hover-heart-wrapper"><div class="h-heart">💗</div><div class="h-msg">You make me better 📈</div></div>
+    <div class="hover-heart-wrapper"><div class="h-heart">❤️‍🔥</div><div class="h-msg">My heart is on fire! 🔥</div></div>
+    <div class="hover-heart-wrapper"><div class="h-heart">💕</div><div class="h-msg">Thinking of you 💭</div></div>
+    <div class="hover-heart-wrapper"><div class="h-heart">💌</div><div class="h-msg">Forever yours 🔐</div></div>
+    <div class="hover-heart-wrapper"><div class="h-heart">✨</div><div class="h-msg">You are magic 🪄</div></div>
+  </div>
+</div>
+
+<div id="final-note" class="screen">
+  <div style="font-size: 100px; margin-bottom: 20px;">💍</div>
+  <h1 style="color: var(--gold); letter-spacing: 10px;">I LOVE YOU ♾️</h1>
+  <p style="color: white; text-align: center; max-width: 600px; line-height: 2;">
+    You've opened every gift, but the biggest one is my heart, ❤️ <br>
+    which belongs to you today and every day after. 📅 <br><br>
+    <strong>Will you be my Valentine forever? 🏹🌹</strong>
+  </p>
+</div>
+
+<script>
+  const cursor = document.getElementById('cursor-heart');
+  let mX = 0, mY = 0;
+  let openedBoxes = new Set();
+
+  window.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    mX = e.clientX; mY = e.clientY;
+  });
+
+  function openBox(id, screen) {
+    openedBoxes.add(id);
+    document.getElementById(id).classList.add('opened');
+    if(screen === 'gift-infinity') startInfinityGame();
+    else if(screen === 'gift-msg') {
+        showScreen(screen);
+        startTypewriter();
+    }
+    else showScreen(screen);
+    
+    if(openedBoxes.size === 4) {
+      setTimeout(() => {
+        document.getElementById('hub-content').style.display = 'none';
+        document.getElementById('final-surprise-btn').style.display = 'block';
+      }, 500);
+    }
+  }
+
+  function showFinalNote() { showScreen('final-note'); }
+
+  const messages = [
+    "Love you, Tannyboy", 
+    "Ammuuu, my favorite", 
+    "I love you, Baby", 
+    "My Good Boy, I love you", 
+    "Always yours", 
+    "Forever Ammuuu", 
+    "Tannyboy is mine", 
+    "My heart belongs to Baby",
+    "You're my world",
+    "Pure Magic",
+    "Infinite Love"
+  ];
+  const container = document.getElementById('floating-messages-container');
+
+  function createFloatingText() {
+    const div = document.createElement('div');
+    div.className = 'floating-text';
+    div.innerText = messages[Math.floor(Math.random() * messages.length)];
+    div.style.left = Math.random() * 100 + 'vw';
+    div.style.top = '110vh';
+    div.style.animationDuration = (Math.random() * 5 + 6) + 's';
+    container.appendChild(div);
+    setTimeout(() => div.remove(), 10000);
+  }
+  setInterval(createFloatingText, 450);
+
+  const slowMsg = "To my favorite person... 🧸 I wanted to create something as special as you are. 🌟 Every moment with you is a treasure. 💎 Happy Valentine's Day! ❤️💌✨";
+  let typewriterIdx = 0;
+  function startTypewriter() {
+    document.getElementById('typewriter-text').innerHTML = "";
+    typewriterIdx = 0;
+    type();
+  }
+  function type() {
+    if (typewriterIdx < slowMsg.length) {
+      document.getElementById('typewriter-text').innerHTML += slowMsg.charAt(typewriterIdx);
+      typewriterIdx++;
+      setTimeout(type, 100);
+    }
+  }
+
+  const bgCanvas = document.getElementById('bg-canvas');
+  const bgCtx = bgCanvas.getContext('2d');
+  let stars = [];
+  function initStars() {
+    bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight;
+    stars = []; for(let i=0; i<80; i++) stars.push({x:Math.random()*bgCanvas.width, y:Math.random()*bgCanvas.height, size:Math.random()*2, opacity:Math.random(), speed:Math.random()*0.015});
+  }
+  function drawStars() {
+    bgCtx.clearRect(0,0,bgCanvas.width, bgCanvas.height);
+    stars.forEach(s => { s.opacity += s.speed; if(s.opacity>1||s.opacity<0) s.speed=-s.speed; bgCtx.fillStyle=`rgba(255,255,255,${s.opacity})`; bgCtx.beginPath(); bgCtx.arc(s.x,s.y,s.size,0,Math.PI*2); bgCtx.fill(); });
+    requestAnimationFrame(drawStars);
+  }
+  initStars(); drawStars();
+
+  function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    const backBtn = document.querySelector('.back-btn');
+    if (screenId === 'welcome-screen' || screenId === 'hub-screen' || screenId === 'final-note') {
+      backBtn.style.display = 'none';
+      stopInfinity();
+    } else {
+      backBtn.style.display = 'block';
+    }
+  }
+
+  const canvas = document.getElementById('infCanvas');
+  const ctx = canvas.getContext('2d');
+  let infinityDots = [], currentDotIndex = 0, isCompleted = false, hasPopped = false, particles = [], bigHeartScale = 0.1, bigHeartOpacity = 0, animId;
+
+  function startInfinityGame() { 
+    showScreen('gift-infinity'); 
+    document.getElementById('infinite-reveal-msg').style.opacity = '0';
+    document.getElementById('restart-inf').style.display = 'none';
+    stopInfinity();
+    initInf(); 
+    animateInf(); 
+  }
+  
+  function stopInfinity() { cancelAnimationFrame(animId); isCompleted = false; hasPopped = false; currentDotIndex = 0; particles = []; bigHeartScale = 0.1; bigHeartOpacity = 0;}
+
+  function initInf() {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const cX = canvas.width / 2; const cY = canvas.height / 2;
+    infinityDots = [];
+    const scale = Math.min(canvas.width, canvas.height) * 0.45;
+    for (let i = 0; i < 100; i++) {
+      const t = (i / 100) * Math.PI * 2;
+      const common = scale * Math.cos(t) / (1 + Math.pow(Math.sin(t), 2));
+      infinityDots.push({ x: common + cX, y: common * Math.sin(t) + cY, connected: false });
+    }
+  }
+
+  function drawHeart(x, y, size, color, alpha = 1) {
+    ctx.save(); ctx.translate(x, y); ctx.beginPath(); ctx.scale(size / 10, size / 10);
+    ctx.moveTo(0, 0); ctx.bezierCurveTo(5, -5, 10, 0, 0, 10); ctx.bezierCurveTo(-10, 0, -5, -5, 0, 0);
+    ctx.fillStyle = color; ctx.globalAlpha = alpha; ctx.fill(); ctx.restore();
+  }
+
+  function animateInf() {
+    ctx.fillStyle = 'rgba(5, 0, 2, 0.25)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (!isCompleted) {
+      let dot = infinityDots[currentDotIndex];
+      if (dot && Math.hypot(mX - dot.x, mY - dot.y) < 45) { dot.connected = true; currentDotIndex++; if (currentDotIndex >= 100) isCompleted = true; }
+    }
+    const gradient = ctx.createRadialGradient(mX, mY, 0, mX, mY, 160);
+    gradient.addColorStop(0, 'rgba(255, 179, 209, 0.1)');
+    gradient.addColorStop(1, 'transparent');
+    ctx.fillStyle = gradient; ctx.fillRect(0,0, canvas.width, canvas.height);
+    ctx.beginPath(); ctx.lineWidth = 4; ctx.strokeStyle = "#ff1a75";
+    let started = false;
+    infinityDots.forEach(d => { if(d.connected) { if(!started){ctx.moveTo(d.x,d.y);started=true;}else{ctx.lineTo(d.x,d.y);}} });
+    ctx.stroke();
+
+    if (isCompleted && !hasPopped) {
+      bigHeartScale += 0.15; bigHeartOpacity = Math.min(0.4, bigHeartOpacity + 0.05);
+      if (bigHeartScale > 2.0) {
+        hasPopped = true;
+        document.getElementById('infinite-reveal-msg').style.opacity = '1';
+        document.getElementById('restart-inf').style.display = 'block';
+        for(let i=0; i<800; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 25 + 5;
+            particles.push({x:canvas.width/2, y:canvas.height/2, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed, size:Math.random()*8+2, color:`hsl(${Math.random()*50+320},100%,90%)`, alpha:1, decay:0.005});
+        }
+      }
+      drawHeart(canvas.width/2, canvas.height/2 - 20, 200 * bigHeartScale, "rgba(255, 255, 255, 0.5)", bigHeartOpacity);
+    }
+    particles.forEach((p, i) => {
+      p.x += p.vx; p.y += p.vy; p.vx *= 0.98; p.vy *= 0.98; p.alpha -= p.decay;
+      drawHeart(p.x, p.y, p.size, p.color, p.alpha);
+      if (p.alpha <= 0) particles.splice(i, 1);
+    });
+    animId = requestAnimationFrame(animateInf);
+  }
+
+  window.addEventListener('resize', () => { initStars(); initInf(); });
+</script>
+</body>
+</html>
